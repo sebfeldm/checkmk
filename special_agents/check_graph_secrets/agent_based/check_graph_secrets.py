@@ -181,6 +181,6 @@ check_plugin_check_graph_secrets = CheckPlugin(
     service_name="Graph Secret %s",
     discovery_function=discover_check_graph_secrets,
     check_function=check_check_graph_secrets,
-    check_ruleset_name="check_graph_secrets",
+    check_ruleset_name="check_graph_secrets_params",
     check_default_parameters={"secret_expiration": ("fixed", (2592000.0, 1209600.0))},
 )

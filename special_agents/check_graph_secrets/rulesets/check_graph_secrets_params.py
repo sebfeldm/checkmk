@@ -73,7 +73,7 @@ def _parameter_form_check_graph_secrets_params() -> Dictionary:
 
 
 rule_spec_check_graph_secrets_params = CheckParameters(
-    name="check_graph_secrets",
+    name="check_graph_secrets_params",
     title=Title("Microsoft Graph App Secrets"),
     parameter_form=_parameter_form_check_graph_secrets_params,
     topic=Topic.CLOUD,
