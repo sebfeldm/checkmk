@@ -37,7 +37,11 @@ for the full walkthrough (Checkmk-side configuration, permissions, etc.):
 
 1. **Clone this repo** on the Checkmk site and symlink the plugin folder
    into `~/local/lib/python3/cmk_addons/plugins/<name>/`. Best while you're
-   actively iterating — updates are a `git pull` away.
+   actively iterating — updates are a `git pull` away. Needs shell access
+   to the site. On a **Checkmk Appliance**, that only works on the
+   Enterprise tier with SSH shell access enabled (device config menu or
+   remote maintenance protocol); the **demo/free appliance blocks command
+   line access entirely**, so use option 2 there.
 2. **Download a prebuilt `.mkp`** from the
    [Releases page](https://github.com/sebfeldm/checkmk/releases) (also
    kept in [`releases/`](releases/)) and install it via **Setup →
@@ -73,8 +77,8 @@ python scripts/build_mkp.py special_agents/check_graph_secrets \
 ```
 
 Built packages are checked into [`releases/`](releases/) (tracked
-deliberately — `.gitignore` only blocks *new* `.mkp` files elsewhere from
-being added by accident; `git add -f` a fresh release when cutting one).
+deliberately — `.gitignore` blocks stray `.mkp` files elsewhere from being
+added by accident, but explicitly allows `releases/*.mkp`).
 
 ## Requirements
 
