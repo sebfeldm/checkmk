@@ -113,14 +113,15 @@ below). No repackaging needed.
 
 ### Option B — install the .mkp
 
-Prebuilt packages are in [`releases/`](../../releases/) at the repo root
-(e.g. `check_graph_secrets-1.0.0.mkp`), built with
-[`scripts/build_mkp.py`](../../scripts/build_mkp.py) (no Checkmk site
-needed to build it — pure Python stdlib). Grab one directly, no auth
-needed since the repo is public:
+Prebuilt packages are published as
+[GitHub Releases](https://github.com/sebfeldm/checkmk/releases) (built
+with [`scripts/build_mkp.py`](../../scripts/build_mkp.py) — no Checkmk
+site needed to build it, pure Python stdlib) and also kept in
+[`releases/`](../../releases/) at the repo root. Grab one directly, no
+auth needed since the repo is public:
 
 ```bash
-wget https://raw.githubusercontent.com/sebfeldm/checkmk/main/releases/check_graph_secrets-1.0.0.mkp
+wget https://github.com/sebfeldm/checkmk/releases/download/check_graph_secrets-v1.0.0/check_graph_secrets-1.0.0.mkp
 ```
 
 Then either:

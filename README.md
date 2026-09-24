@@ -38,11 +38,13 @@ for the full walkthrough (Checkmk-side configuration, permissions, etc.):
 1. **Clone this repo** on the Checkmk site and symlink the plugin folder
    into `~/local/lib/python3/cmk_addons/plugins/<name>/`. Best while you're
    actively iterating — updates are a `git pull` away.
-2. **Download a prebuilt `.mkp`** from [`releases/`](releases/) and install
-   it via **Setup → Maintenance → Extension packages** or `mkp install`.
-   Since this repo is public, no auth is needed:
+2. **Download a prebuilt `.mkp`** from the
+   [Releases page](https://github.com/sebfeldm/checkmk/releases) (also
+   kept in [`releases/`](releases/)) and install it via **Setup →
+   Maintenance → Extension packages** or `mkp install`. Since this repo is
+   public, no auth is needed:
    ```bash
-   wget https://raw.githubusercontent.com/sebfeldm/checkmk/main/releases/check_graph_secrets-1.0.0.mkp
+   wget https://github.com/sebfeldm/checkmk/releases/download/check_graph_secrets-v1.0.0/check_graph_secrets-1.0.0.mkp
    ```
 
 If you clone the repo onto a site that should only ever use the symlink
