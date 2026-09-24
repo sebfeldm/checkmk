@@ -1,6 +1,6 @@
 # checkmk
 
-Custom Checkmk monitoring plugins developed by [hivescript](https://github.com/hivescript).
+Custom Checkmk monitoring plugins by [Sebastian Feldmann](https://github.com/sebfeldm).
 
 ## Structure
 
@@ -12,7 +12,9 @@ checkmk/
 ├── special_agents/   # Special agents (run on the Checkmk server, query an external API)
 │   └── check_graph_secrets/
 ├── checks/           # Local checks (run via the Checkmk agent on a monitored host)
-└── plugins/          # Other plugin types (inventory, notification, ...)
+├── plugins/           # Other plugin types (inventory, notification, ...)
+├── releases/          # Built .mkp packages, one per plugin release
+└── scripts/           # Repo tooling (e.g. the .mkp builder)
 ```
 
 Every plugin/check name starts with `check_`.
@@ -26,7 +28,32 @@ details.
 
 - [special_agents/check_graph_secrets](special_agents/check_graph_secrets/README.md) —
   monitors expiration of Microsoft Entra app registration client secrets via
-  the Microsoft Graph API.
+  the Microsoft Graph API. Running in production since 2026-09.
+
+## Installing a plugin
+
+Two ways to get a plugin onto a Checkmk site — see the plugin's own README
+for the full walkthrough (Checkmk-side configuration, permissions, etc.):
+
+1. **Clone this repo** on the Checkmk site and symlink the plugin folder
+   into `~/local/lib/python3/cmk_addons/plugins/<name>/`. Best while you're
+   actively iterating — updates are a `git pull` away.
+2. **Download a prebuilt `.mkp`** from [`releases/`](releases/) and install
+   it via **Setup → Maintenance → Extension packages** or `mkp install`.
+   Since this repo is public, no auth is needed:
+   ```bash
+   wget https://raw.githubusercontent.com/sebfeldm/checkmk/main/releases/check_graph_secrets-1.0.0.mkp
+   ```
+
+If you clone the repo onto a site that should only ever use the symlink
+method (option 1), you can keep the `.mkp` files out of that clone's
+working tree with `git sparse-checkout` — they stay downloadable from
+GitHub either way:
+```bash
+git sparse-checkout init --no-cone
+printf '/*\n!/releases/\n' > .git/info/sparse-checkout
+git sparse-checkout reapply
+```
 
 ## Building .mkp packages
 
@@ -40,10 +67,12 @@ python scripts/build_mkp.py special_agents/check_graph_secrets \
   --title "Microsoft Graph App Secrets" \
   --author "Your Name <you@example.com>" \
   --description "What the package does." \
-  --download-url "https://github.com/hivescript/checkmk/tree/main/special_agents/check_graph_secrets"
+  --download-url "https://github.com/sebfeldm/checkmk/tree/main/special_agents/check_graph_secrets"
 ```
 
-Built packages are checked into [`releases/`](releases/).
+Built packages are checked into [`releases/`](releases/) (tracked
+deliberately — `.gitignore` only blocks *new* `.mkp` files elsewhere from
+being added by accident; `git add -f` a fresh release when cutting one).
 
 ## Requirements
 

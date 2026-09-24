@@ -22,6 +22,13 @@ API v1 / Ruleset API v1). Tested and running in production on Checkmk 2.3.
 Certificates (`keyCredentials`) and federated credentials are intentionally
 out of scope for this check.
 
+### What it looks like
+
+Service discovery on a tenant with app secrets — most fine, two overdue
+for rotation (app names redacted, everything else is real output):
+
+![Discovered services, some CRIT for expired secrets](docs/services-example.png)
+
 ## Step 1: Create the Microsoft Entra app registration
 
 Create a **dedicated** app registration used only by this special agent
@@ -61,17 +68,17 @@ Two options; pick one.
 
 ### Option A — git clone + symlink (recommended while iterating)
 
-On the Checkmk server, as the **site user**:
+The repo is public, so a plain HTTPS clone works, no key needed. On the
+Checkmk server, as the **site user**:
 
 ```bash
 mkdir -p ~/git && cd ~/git
-git clone git@github.com:hivescript/checkmk.git
+git clone https://github.com/sebfeldm/checkmk.git
 ```
 
-The repo is private, so this needs a **read-only SSH deploy key** for the
-site user (Settings → Deploy keys on the `hivescript/checkmk` GitHub repo).
-Generate one on the server if you don't have one yet:
-
+(If you'd rather use SSH — e.g. the repo goes private again later —
+generate a deploy key on the server and add it as a **read-only** key
+under Settings → Deploy keys on the GitHub repo:
 ```bash
 ssh-keygen -t ed25519 -C "checkmk-<site>-deploy" -f ~/.ssh/id_ed25519_checkmk -N ""
 cat ~/.ssh/id_ed25519_checkmk.pub   # paste this whole line as the deploy key
@@ -81,6 +88,17 @@ Host github.com
     IdentitiesOnly yes
 EOF
 chmod 600 ~/.ssh/config
+```
+then clone `git@github.com:sebfeldm/checkmk.git` instead.)
+
+Optional: this clone doesn't need the built `.mkp` files under
+`releases/` in its working tree (they're only there for people who want
+to `wget` one directly from GitHub). Keep them out of this checkout with:
+```bash
+cd ~/git/checkmk
+git sparse-checkout init --no-cone
+printf '/*\n!/releases/\n' > .git/info/sparse-checkout
+git sparse-checkout reapply
 ```
 
 Then symlink this plug-in folder into place:
@@ -98,7 +116,14 @@ below). No repackaging needed.
 Prebuilt packages are in [`releases/`](../../releases/) at the repo root
 (e.g. `check_graph_secrets-1.0.0.mkp`), built with
 [`scripts/build_mkp.py`](../../scripts/build_mkp.py) (no Checkmk site
-needed to build it — pure Python stdlib). Download the file and either:
+needed to build it — pure Python stdlib). Grab one directly, no auth
+needed since the repo is public:
+
+```bash
+wget https://raw.githubusercontent.com/sebfeldm/checkmk/main/releases/check_graph_secrets-1.0.0.mkp
+```
+
+Then either:
 
 - **Setup → Maintenance → Extension packages → Upload package**, or
 - on the server: `mkp install check_graph_secrets-1.0.0.mkp`
