@@ -28,6 +28,23 @@ details.
   monitors expiration of Microsoft Entra app registration client secrets via
   the Microsoft Graph API.
 
+## Building .mkp packages
+
+`scripts/build_mkp.py` packages a plugin folder into a `.mkp` extension
+package, using only the Python standard library (no Checkmk site needed):
+
+```bash
+python scripts/build_mkp.py special_agents/check_graph_secrets \
+  --name check_graph_secrets \
+  --version 1.0.0 \
+  --title "Microsoft Graph App Secrets" \
+  --author "Your Name <you@example.com>" \
+  --description "What the package does." \
+  --download-url "https://github.com/hivescript/checkmk/tree/main/special_agents/check_graph_secrets"
+```
+
+Built packages are checked into [`releases/`](releases/).
+
 ## Requirements
 
 Checkmk 2.3 or newer (plug-in API v2 / Server Side Calls API v1 / Ruleset
