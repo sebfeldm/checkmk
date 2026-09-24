@@ -24,10 +24,10 @@ out of scope for this check.
 
 ### What it looks like
 
-Service discovery on a tenant with app secrets — most fine, two overdue
-for rotation (app names redacted, everything else is real output):
+Service list for a monitored tenant — most secrets fine, some already
+overdue for rotation (app names redacted, everything else is real output):
 
-![Discovered services, some CRIT for expired secrets](docs/services-example.png)
+![Monitored services, some CRIT for expired secrets](docs/services-example.png)
 
 ## Step 1: Create the Microsoft Entra app registration
 
