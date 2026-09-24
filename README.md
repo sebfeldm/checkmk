@@ -35,14 +35,7 @@ details.
 Two ways to get a plugin onto a Checkmk site — see the plugin's own README
 for the full walkthrough (Checkmk-side configuration, permissions, etc.):
 
-1. **Clone this repo** on the Checkmk site and symlink the plugin folder
-   into `~/local/lib/python3/cmk_addons/plugins/<name>/`. Best while you're
-   actively iterating — updates are a `git pull` away. Needs shell access
-   to the site. On a **Checkmk Appliance**, that only works on the
-   Enterprise tier with SSH shell access enabled (device config menu or
-   remote maintenance protocol); the **demo/free appliance blocks command
-   line access entirely**, so use option 2 there.
-2. **Download a prebuilt `.mkp`** from the
+1. **Download a prebuilt `.mkp`** from the
    [Releases page](https://github.com/sebfeldm/checkmk/releases) (also
    kept in [`releases/`](releases/)) and install it via **Setup →
    Maintenance → Extension packages** or `mkp install`. Since this repo is
@@ -50,9 +43,16 @@ for the full walkthrough (Checkmk-side configuration, permissions, etc.):
    ```bash
    wget https://github.com/sebfeldm/checkmk/releases/download/check_graph_secrets-v1.0.0/check_graph_secrets-1.0.0.mkp
    ```
+2. **Clone this repo** on the Checkmk site and symlink the plugin folder
+   into `~/local/lib/python3/cmk_addons/plugins/<name>/`. Best while you're
+   actively iterating — updates are a `git pull` away. Needs shell access
+   to the site. On a **Checkmk Appliance**, that only works on the
+   Enterprise tier with SSH shell access enabled (device config menu or
+   remote maintenance protocol); the **demo/free appliance blocks command
+   line access entirely**, so use option 1 there.
 
 If you clone the repo onto a site that should only ever use the symlink
-method (option 1), you can keep the `.mkp` files out of that clone's
+method (option 2), you can keep the `.mkp` files out of that clone's
 working tree with `git sparse-checkout` — they stay downloadable from
 GitHub either way:
 ```bash

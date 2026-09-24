@@ -66,7 +66,30 @@ own, so there is no narrower Graph permission that fits.
 
 Two options; pick one.
 
-### Option A — git clone + symlink (recommended while iterating)
+### Option 1 — install the .mkp
+
+Prebuilt packages are published as
+[GitHub Releases](https://github.com/sebfeldm/checkmk/releases) (built
+with [`scripts/build_mkp.py`](../../scripts/build_mkp.py) — no Checkmk
+site needed to build it, pure Python stdlib) and also kept in
+[`releases/`](../../releases/) at the repo root. Grab one directly, no
+auth needed since the repo is public:
+
+```bash
+wget https://github.com/sebfeldm/checkmk/releases/download/check_graph_secrets-v1.0.0/check_graph_secrets-1.0.0.mkp
+```
+
+Then either:
+
+- **Setup → Maintenance → Extension packages → Upload package**, or
+- on the server: `mkp install check_graph_secrets-1.0.0.mkp`
+
+Use this if you want a Checkmk-version-tracked, enable/disable-able
+package instead of a live git symlink (e.g. distributing to a site you
+don't manage directly), or if the site has no shell access (e.g. the
+Checkmk Appliance demo/free tier).
+
+### Option 2 — git clone + symlink (recommended while iterating)
 
 The repo is public, so a plain HTTPS clone works, no key needed. On the
 Checkmk server, as the **site user**:
@@ -109,29 +132,11 @@ ln -s ~/git/checkmk/special_agents/check_graph_secrets \
 ```
 
 **Update process:** `cd ~/git/checkmk && git pull`, then reload (see
-below). No repackaging needed.
-
-### Option B — install the .mkp
-
-Prebuilt packages are published as
-[GitHub Releases](https://github.com/sebfeldm/checkmk/releases) (built
-with [`scripts/build_mkp.py`](../../scripts/build_mkp.py) — no Checkmk
-site needed to build it, pure Python stdlib) and also kept in
-[`releases/`](../../releases/) at the repo root. Grab one directly, no
-auth needed since the repo is public:
-
-```bash
-wget https://github.com/sebfeldm/checkmk/releases/download/check_graph_secrets-v1.0.0/check_graph_secrets-1.0.0.mkp
-```
-
-Then either:
-
-- **Setup → Maintenance → Extension packages → Upload package**, or
-- on the server: `mkp install check_graph_secrets-1.0.0.mkp`
-
-Use this if you want a Checkmk-version-tracked, enable/disable-able
-package instead of a live git symlink (e.g. distributing to a site you
-don't manage directly).
+below). No repackaging needed. Needs shell access to the site — on a
+**Checkmk Appliance**, that only works on the Enterprise tier with SSH
+shell access enabled (device config menu or remote maintenance
+protocol); the demo/free appliance blocks command line access entirely,
+so use option 1 there.
 
 ### Reload after install/update (either option)
 
