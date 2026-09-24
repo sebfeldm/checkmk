@@ -60,7 +60,13 @@ def build(
     exec_bits = git_exec_bits(repo_root, plugin_dir)
     plugin_dir_rel = plugin_dir.relative_to(repo_root).as_posix()
 
-    files = sorted(p for p in plugin_dir.rglob("*") if p.is_file())
+    exclude_dirs = {"docs"}
+    files = sorted(
+        p
+        for p in plugin_dir.rglob("*")
+        if p.is_file()
+        and not exclude_dirs.intersection(p.relative_to(plugin_dir).parts[:-1])
+    )
     if not files:
         raise ValueError(f"No files found under {plugin_dir}")
 
