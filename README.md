@@ -11,10 +11,10 @@ plugin:
 checkmk/
 ├── special_agents/   # Special agents (run on the Checkmk server, query an external API)
 │   └── check_graph_secrets/
-├── checks/           # Local checks (run via the Checkmk agent on a monitored host)
-├── plugins/           # Other plugin types (inventory, notification, ...)
-├── releases/          # Built .mkp packages, one per plugin release
-└── scripts/           # Repo tooling (e.g. the .mkp builder)
+├── checks/           # Local checks (run via the Checkmk agent on a monitored host) — not used yet
+├── plugins/          # Other plugin types (inventory, notification, ...) — not used yet
+├── releases/         # Built .mkp packages, one per plugin release
+└── scripts/          # Repo tooling (e.g. the .mkp builder)
 ```
 
 Every plugin/check name starts with `check_`.
@@ -84,3 +84,7 @@ added by accident, but explicitly allows `releases/*.mkp`).
 
 Checkmk 2.3 or newer (plug-in API v2 / Server Side Calls API v1 / Ruleset
 API v1).
+
+## License
+
+[MIT](LICENSE).
