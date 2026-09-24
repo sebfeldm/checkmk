@@ -10,7 +10,7 @@ Executable bits are taken from git's index (not the local filesystem), so
 this produces correct permissions even when built on Windows.
 
 Usage:
-    python scripts/build_mkp.py special_agents/check_graph_secrets \\
+    python3 scripts/build_mkp.py special_agents/check_graph_secrets \\
         --name check_graph_secrets \\
         --version 1.0.0 \\
         --title "Microsoft Graph App Secrets" \\

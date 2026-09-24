@@ -67,7 +67,7 @@ git sparse-checkout reapply
 package, using only the Python standard library (no Checkmk site needed):
 
 ```bash
-python scripts/build_mkp.py special_agents/check_graph_secrets \
+python3 scripts/build_mkp.py special_agents/check_graph_secrets \
   --name check_graph_secrets \
   --version 1.0.0 \
   --title "Microsoft Graph App Secrets" \
