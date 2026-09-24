@@ -3,3 +3,4 @@ __pycache__/
 .venv/
 .mkp-build/
 *.mkp
+!releases/*.mkp
