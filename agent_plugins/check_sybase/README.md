@@ -14,11 +14,11 @@ service name.
 
 | Service | What it checks | Rule (Setup → Services → Service monitoring rules → Databases) | Defaults |
 |---|---|---|---|
-| `Sybase Instance <SID>` | isql connection, `dataserver` and `backupserver` process | SAP ASE (Sybase) Instance | CRIT if any fails |
-| `Sybase Data <SID> <DB>` | used space of the data segments | SAP ASE (Sybase) Database Data Usage | WARN 90 %, CRIT 95 %; optional levels on free space |
-| `Sybase Log <SID> <DB>` | used space of the dedicated log segment (only databases that have one) | SAP ASE (Sybase) Database Log Usage | WARN 80 %, CRIT 90 %; optional levels on free space |
-| `Sybase Backup <SID> <DB>` | age and result of the last database backup | SAP ASE (Sybase) Database Backup | WARN 26 h, CRIT 50 h; CRIT if failed; WARN if never backed up |
-| `Sybase Errorlog <SID>` | lines in the ASE errorlog matching an error pattern within a time window | SAP ASE (Sybase) Errorlog | CRIT from the first error |
+| `SYBASE <SID> Instance` | isql connection, `dataserver` and `backupserver` process | SAP ASE (Sybase) Instance | CRIT if any fails |
+| `SYBASE <SID> <DB> Data` | used space of the data segments | SAP ASE (Sybase) Database Data Usage | WARN 90 %, CRIT 95 %; optional levels on free space |
+| `SYBASE <SID> <DB> Log` | used space of the dedicated log segment (only databases that have one) | SAP ASE (Sybase) Database Log Usage | WARN 80 %, CRIT 90 %; optional levels on free space |
+| `SYBASE <SID> <DB> Backup` | age and result of the last database backup | SAP ASE (Sybase) Database Backup | WARN 26 h, CRIT 50 h; CRIT if failed; WARN if never backed up |
+| `SYBASE <SID> Errorlog` | lines in the ASE errorlog matching an error pattern within a time window | SAP ASE (Sybase) Errorlog | CRIT from the first error |
 
 Which databases get **no** backup service (e.g. temporary databases) is set
 by the discovery rule *SAP ASE (Sybase) Database Backup Discovery*
@@ -37,8 +37,8 @@ Two options; pick one. Both work on the Raw edition.
 #### Option 1 — install the .mkp
 
 ```bash
-wget https://github.com/sebfeldm/checkmk/releases/download/check_sybase-v1.0.0/check_sybase-1.0.0.mkp
-mkp install check_sybase-1.0.0.mkp
+wget https://github.com/sebfeldm/checkmk/releases/download/check_sybase-v1.0.1/check_sybase-1.0.1.mkp
+mkp install check_sybase-1.0.1.mkp
 ```
 
 (or **Setup → Maintenance → Extension packages → Upload package**). This
@@ -115,7 +115,7 @@ chmod 0755 /usr/lib/check_mk_agent/plugins/300/check_sybase
 ```
 
 `main` is always the latest version. To pin a released version, replace
-`main` in the URLs with the release tag, e.g. `check_sybase-v1.0.0`.
+`main` in the URLs with the release tag, e.g. `check_sybase-v1.0.1`.
 
 **Hosts without internet access** — download the files from the Checkmk
 server (**Setup → Agents → Linux**) or copy them from a checkout, then:
@@ -180,9 +180,9 @@ plus an external `.sql` file) with thresholds in the script. To switch:
    (including host-specific exceptions) in the GUI.
 2. On each host: deploy plug-in and config as described above, then remove
    the old local check script and its `.sql` file.
-3. Run a service discovery: the old `SYBASE …` services vanish, the new
-   `Sybase …` services appear. Service names and metrics changed, so graph
-   history starts anew.
+3. Run a service discovery: the old services (e.g. `SYBASE <SID> DB`)
+   vanish, the new ones (e.g. `SYBASE <SID> <DB> Data`) appear. Service
+   names and metrics changed, so graph history starts anew.
 
 Behavioral differences to the old local check:
 
