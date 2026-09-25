@@ -11,8 +11,7 @@ plugin:
 checkmk/
 ├── special_agents/   # Special agents (run on the Checkmk server, query an external API)
 │   └── check_graph_secrets/
-├── agent_plugins/    # Agent plug-ins (run by the Checkmk agent on a monitored host) + their server-side checks
-│   └── check_sybase/
+├── agent_plugins/    # Agent plug-ins (run by the Checkmk agent on a monitored host) + their server-side checks — not used yet
 ├── checks/           # Local checks (run via the Checkmk agent on a monitored host) — not used yet
 ├── plugins/          # Other plugin types (inventory, notification, ...) — not used yet
 ├── releases/         # Built .mkp packages, one per plugin release
@@ -33,10 +32,6 @@ See each plugin's own README for setup details.
 - [special_agents/check_graph_secrets](special_agents/check_graph_secrets/README.md) —
   monitors expiration of Microsoft Entra app registration client secrets via
   the Microsoft Graph API. Running in production since 2026-09.
-- [agent_plugins/check_sybase](agent_plugins/check_sybase/README.md) —
-  monitors SAP ASE (Sybase) instances on Linux: connection, dataserver and
-  backupserver, data and log usage, backups and errorlog. All thresholds are
-  set via rules in the Checkmk GUI.
 
 ## Installing a plugin
 

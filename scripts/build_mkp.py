@@ -158,7 +158,7 @@ def main() -> int:
     parser.add_argument(
         "plugin_dir",
         type=Path,
-        help="e.g. special_agents/check_graph_secrets or agent_plugins/check_sybase",
+        help="e.g. special_agents/check_graph_secrets",
     )
     parser.add_argument("--name", required=True, help="Package/plugin name")
     parser.add_argument("--version", required=True, help="Package version, e.g. 1.0.0")
