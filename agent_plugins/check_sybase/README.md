@@ -156,7 +156,8 @@ For each configured instance the plug-in:
 
 The password is handed to `isql` via stdin by default, so it doesn't show up
 in the process list. If your `isql` build doesn't read the password from
-stdin, set `password_via=argv` (old behavior with `-P`).
+stdin, set `password_via=argv` (password via `-P`, visible in the process
+list while isql runs).
 
 Agent output (section `check_sybase`, separated by `;`):
 
@@ -170,27 +171,3 @@ db;ABC;saptempdb;4096.00;12.00;0.00;0.00;;0
 errorlog;ABC;ok;24;1;/sybase/ABC/ASE-16_0/install/ABC.log
 errorlog_line;ABC;2025/02/11 10:15:32;Error: 1105, Severity: 17, State: 4
 ```
-
-## Migrating from the old local check
-
-The previous version was a local check (`/usr/lib/check_mk_agent/local/300/…`
-plus an external `.sql` file) with thresholds in the script. To switch:
-
-1. Install the `.mkp` and create the rules for your current thresholds
-   (including host-specific exceptions) in the GUI.
-2. On each host: deploy plug-in and config as described above, then remove
-   the old local check script and its `.sql` file.
-3. Run a service discovery: the old services (e.g. `SYBASE <SID> DB`)
-   vanish, the new ones (e.g. `SYBASE <SID> <DB> Data`) appear. Service
-   names and metrics changed, so graph history starts anew.
-
-Behavioral differences to the old local check:
-
-- A failed or hanging isql connection now turns the instance service CRIT
-  (previously the database services just went stale).
-- The backup service also checks the **age** of the last backup, not only
-  the failure flag.
-- The errorlog pattern is matched case-insensitively by default, so ASE's
-  own `Error: …` lines are found too (set `errorlog_ignore_case=no` for the
-  old behavior).
-- The errorlog window is exactly the last N hours (default 24).
