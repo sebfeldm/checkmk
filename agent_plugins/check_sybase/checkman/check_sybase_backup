@@ -10,8 +10,9 @@ description:
 
  Via the rule "SAP ASE (Sybase) Database Backup" you can configure levels for
  the age of the last backup (default: 26 hours WARN, 50 hours CRIT), the state
- if the last backup failed (default: CRIT) and the state if no backup exists
- (default: WARN).
+ if the last backup failed (default: CRIT), optionally only after the failure
+ flag has been set continuously for a grace period, and the state if no backup
+ exists (default: WARN).
 
 item:
  The SID of the ASE instance and the database name, separated by a space.

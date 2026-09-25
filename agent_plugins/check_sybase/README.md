@@ -17,7 +17,7 @@ service name.
 | `SYBASE <SID> Instance` | isql connection, `dataserver` and `backupserver` process | SAP ASE (Sybase) Instance | CRIT if any fails |
 | `SYBASE <SID> <DB> Data` | used space of the data segments | SAP ASE (Sybase) Database Data Usage | WARN 90 %, CRIT 95 %; optional levels on free space |
 | `SYBASE <SID> <DB> Log` | used space of the dedicated log segment (only databases that have one) | SAP ASE (Sybase) Database Log Usage | WARN 80 %, CRIT 90 %; optional levels on free space |
-| `SYBASE <SID> <DB> Backup` | age and result of the last database backup | SAP ASE (Sybase) Database Backup | WARN 26 h, CRIT 50 h; CRIT if failed; WARN if never backed up |
+| `SYBASE <SID> <DB> Backup` | age and result of the last database backup | SAP ASE (Sybase) Database Backup | WARN 26 h, CRIT 50 h; CRIT if failed (optionally only after a grace period); WARN if never backed up |
 | `SYBASE <SID> Errorlog` | lines in the ASE errorlog matching an error pattern within a time window | SAP ASE (Sybase) Errorlog | CRIT from the first error |
 
 Temporary databases (`tempdb`, `saptempdb`, …) get no backup service. How to
@@ -215,14 +215,19 @@ database* = `ABC ABC$`. Place it above the general rule.
 rule *SAP ASE (Sybase) Database Backup*, *Age of the last backup* =
 2 days / 3 days, e.g. for all databases of instance `ABC `.
 
-**Ignore the failure flag for databases without a dedicated log:**
-SAP ASE may report `LastBackupFailed` for databases whose log shares the
-data device (e.g. `master`, `model`, `sybsystemdb`, `sybsystemprocs`),
-typically after a transaction log dump that isn't possible for them. If your
-DBA confirms this is expected: rule *SAP ASE (Sybase) Database Backup*,
-*State if the last backup failed* = OK, *Instance and database* =
-`.* (master|model|sybsystemdb|sybsystemprocs)$`. The age of the last backup
-is still checked.
+**Don't alert on a briefly set failure flag:**
+SAP ASE may set `LastBackupFailed` only temporarily, e.g. after a
+transaction log dump that isn't possible for databases whose log shares the
+data device (`master`, `model`, `sybsystemdb`, `sybsystemprocs`, …). Rule
+*SAP ASE (Sybase) Database Backup*, *Tolerate a failed backup for* = e.g.
+1 hour: the service only goes CRIT once the flag has been set continuously
+for an hour; before that it stays OK and shows since when the flag is set.
+Without conditions this applies to all databases; to limit it, set
+*Instance and database* = `.* (master|model|sybsystemdb|sybsystemprocs)$`.
+
+**Ignore the failure flag completely for some databases:**
+same rule, *State if the last backup failed* = OK, *Instance and database*
+as above. The age of the last backup is still checked.
 
 **Backupserver not needed on a host:**
 rule *SAP ASE (Sybase) Instance*, *State if the backupserver is not

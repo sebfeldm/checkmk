@@ -23,7 +23,7 @@
 
 import re
 import time
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableMapping
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -33,6 +33,7 @@ from cmk.agent_based.v2 import (
     CheckPlugin,
     CheckResult,
     DiscoveryResult,
+    get_value_store,
     Metric,
     render,
     Result,
@@ -285,6 +286,37 @@ def discover_check_sybase_backup(params: Mapping[str, Any], section: Section) ->
                 yield Service(item=f"{sid} {db_name}")
 
 
+def _check_backup_failed(
+    failed: bool,
+    params: Mapping[str, Any],
+    value_store: MutableMapping[str, Any],
+    now: float,
+) -> CheckResult:
+    """The failure flag of SAP ASE can be set only briefly (e.g. by transaction log dumps that
+    are not possible for databases without a dedicated log segment). With a grace period, the
+    configured state applies only once the flag has been set continuously for that long."""
+    if not failed:
+        value_store.pop("failed_since", None)
+        return
+
+    failed_since = value_store.setdefault("failed_since", now)
+    grace = params.get("failed_grace")
+    if grace is not None and now - failed_since < grace:
+        yield Result(
+            state=State.OK,
+            summary=(
+                f"Last backup failed since {render.datetime(failed_since)} "
+                f"(tolerated for {render.timespan(grace)})"
+            ),
+        )
+        return
+
+    summary = "Last backup failed"
+    if grace is not None:
+        summary += f" since {render.datetime(failed_since)}"
+    yield Result(state=State(params["state_failed"]), summary=summary)
+
+
 def check_check_sybase_backup(
     item: str, params: Mapping[str, Any], section: Section
 ) -> CheckResult:
@@ -294,8 +326,9 @@ def check_check_sybase_backup(
     if database is None:
         return
 
-    if database.backup_failed:
-        yield Result(state=State(params["state_failed"]), summary="Last backup failed")
+    yield from _check_backup_failed(
+        bool(database.backup_failed), params, get_value_store(), time.time()
+    )
 
     if database.backup_time is None:
         yield Result(state=State(params["state_never"]), summary="No backup found")

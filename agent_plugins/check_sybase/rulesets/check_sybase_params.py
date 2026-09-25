@@ -194,6 +194,24 @@ def _parameter_form_check_sybase_backup() -> Dictionary:
                 Help("State if SAP ASE reports the last backup of the database as failed."),
                 ServiceState.CRIT,
             ),
+            "failed_grace": DictElement(
+                parameter_form=TimeSpan(
+                    title=Title("Tolerate a failed backup for"),
+                    help_text=Help(
+                        "SAP ASE can set the failure flag of the last backup only briefly, "
+                        "for example after a transaction log dump that is not possible for "
+                        "databases without a dedicated log segment (master, model, "
+                        "sybsystemdb, sybsystemprocs, ...). With this option, the state "
+                        "above applies only once the flag has been set continuously for "
+                        "this time; before that, the service stays OK and shows since when "
+                        "the flag is set.<br>Without this option, the state applies "
+                        "immediately."
+                    ),
+                    displayed_magnitudes=[TimeMagnitude.HOUR, TimeMagnitude.MINUTE],
+                    custom_validate=(NumberInRange(min_value=0),),
+                    prefill=DefaultValue(3600.0),
+                ),
+            ),
             "state_never": _state(
                 Title("State if no backup exists"),
                 Help("State if the database has never been backed up."),
