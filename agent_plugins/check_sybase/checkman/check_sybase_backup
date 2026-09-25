@@ -1,0 +1,22 @@
+title: SAP ASE (Sybase): Database Backup
+agents: linux
+catalog: app/sybase
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the last backup of an SAP ASE (Sybase) database, based on
+ {BackupStartTime} and {LastBackupFailed} of {monOpenDatabases}, reported by
+ the agent plug-in {check_sybase}.
+
+ Via the rule "SAP ASE (Sybase) Database Backup" you can configure levels for
+ the age of the last backup (default: 26 hours WARN, 50 hours CRIT), the state
+ if the last backup failed (default: CRIT) and the state if no backup exists
+ (default: WARN).
+
+item:
+ The SID of the ASE instance and the database name, separated by a space.
+
+discovery:
+ One service is created for each database, except databases matching the rule
+ "SAP ASE (Sybase) Database Backup Discovery" (default: tempdb, saptempdb and
+ numbered variants).

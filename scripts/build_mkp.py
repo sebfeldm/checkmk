@@ -6,6 +6,11 @@ under <name>/, matching the ~/local/lib/python3/cmk_addons/plugins/<name>/
 install layout Checkmk 2.3 expects. Uses only the Python standard library,
 so it runs without a Checkmk site (e.g. on a plain dev machine).
 
+Files under <plugin_dir>/agents/ (agent plug-ins and their example configs)
+go into agents.tar instead, relative to agents/, matching the
+~/local/share/check_mk/agents/ layout (e.g. agents/plugins/<file> ends up
+in ~/local/share/check_mk/agents/plugins/<file>).
+
 Executable bits are taken from git's index (not the local filesystem), so
 this produces correct permissions even when built on Windows.
 
@@ -60,10 +65,12 @@ def build(
     exec_bits = git_exec_bits(repo_root, plugin_dir)
     plugin_dir_rel = plugin_dir.relative_to(repo_root).as_posix()
 
+    # Only files tracked by git, so local leftovers (__pycache__, test data,
+    # configs with real credentials) never end up in a package.
     exclude_dirs = {"docs"}
     files = sorted(
         p
-        for p in plugin_dir.rglob("*")
+        for p in (repo_root / git_path for git_path in exec_bits)
         if p.is_file()
         and not exclude_dirs.intersection(p.relative_to(plugin_dir).parts[:-1])
     )
@@ -73,41 +80,45 @@ def build(
     output_dir.mkdir(parents=True, exist_ok=True)
     output_file = output_dir / f"{name}-{version}.mkp"
 
+    # Package part -> list of (file, archive name inside that part's tar).
+    parts: dict[str, list[tuple[Path, str]]] = {
+        "agents": [],
+        "cmk_addons_plugins": [],
+        "lib": [],
+        "notifications": [],
+    }
+    for path in files:
+        rel_parts = path.relative_to(plugin_dir).parts
+        if rel_parts[0] == "agents":
+            parts["agents"].append((path, "/".join(rel_parts[1:])))
+        else:
+            parts["cmk_addons_plugins"].append((path, f"{name}/{'/'.join(rel_parts)}"))
+
     build_dir = output_dir / ".mkp-build"
     build_dir.mkdir(exist_ok=True)
     try:
-        rel_files = []
-        addons_tar = build_dir / "cmk_addons_plugins.tar"
-        with tarfile.open(addons_tar, "w") as tar:
-            for path in files:
-                rel_to_plugin = path.relative_to(plugin_dir).as_posix()
-                arcname = f"{name}/{rel_to_plugin}"
-                rel_files.append(arcname)
-
-                git_path = f"{plugin_dir_rel}/{rel_to_plugin}"
-                tarinfo = tar.gettarinfo(str(path), arcname=arcname)
-                tarinfo.mode = 0o755 if exec_bits.get(git_path) else 0o644
-                tarinfo.uid = tarinfo.gid = 0
-                tarinfo.uname = tarinfo.gname = ""
-                tarinfo.mtime = 0
-                with open(path, "rb") as f:
-                    tar.addfile(tarinfo, f)
-
-        # Empty archives for the parts this package doesn't use, so the
+        # Parts this package doesn't use become empty archives, so the
         # package matches the full tar-of-tars schema Checkmk expects.
-        for part in ("agents", "lib", "notifications"):
-            with tarfile.open(build_dir / f"{part}.tar", "w"):
-                pass
+        for part, part_files in parts.items():
+            with tarfile.open(build_dir / f"{part}.tar", "w") as tar:
+                for path, arcname in part_files:
+                    rel_to_plugin = path.relative_to(plugin_dir).as_posix()
+                    git_path = f"{plugin_dir_rel}/{rel_to_plugin}"
+                    tarinfo = tar.gettarinfo(str(path), arcname=arcname)
+                    tarinfo.mode = 0o755 if exec_bits.get(git_path) else 0o644
+                    tarinfo.uid = tarinfo.gid = 0
+                    tarinfo.uname = tarinfo.gname = ""
+                    tarinfo.mtime = 0
+                    with open(path, "rb") as f:
+                        tar.addfile(tarinfo, f)
 
         info_data = {
             "author": author,
             "description": description,
             "download_url": download_url,
             "files": {
-                "agents": [],
-                "cmk_addons_plugins": rel_files,
-                "lib": [],
-                "notifications": [],
+                part: [arcname for _path, arcname in part_files]
+                for part, part_files in parts.items()
             },
             "name": name,
             "title": title,
@@ -145,7 +156,9 @@ def main() -> int:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "plugin_dir", type=Path, help="e.g. special_agents/check_graph_secrets"
+        "plugin_dir",
+        type=Path,
+        help="e.g. special_agents/check_graph_secrets or agent_plugins/check_sybase",
     )
     parser.add_argument("--name", required=True, help="Package/plugin name")
     parser.add_argument("--version", required=True, help="Package version, e.g. 1.0.0")

@@ -1,0 +1,6 @@
+# Keep LF line endings in the working tree too, even with core.autocrlf=true on
+# Windows: build_mkp.py packages files from the working tree, and agent
+# plug-ins with CRLF line endings fail on Linux.
+* text=auto eol=lf
+*.mkp binary
+*.png binary

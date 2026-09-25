@@ -11,6 +11,8 @@ plugin:
 checkmk/
 ├── special_agents/   # Special agents (run on the Checkmk server, query an external API)
 │   └── check_graph_secrets/
+├── agent_plugins/    # Agent plug-ins (run by the Checkmk agent on a monitored host) + their server-side checks
+│   └── check_sybase/
 ├── checks/           # Local checks (run via the Checkmk agent on a monitored host) — not used yet
 ├── plugins/          # Other plugin types (inventory, notification, ...) — not used yet
 ├── releases/         # Built .mkp packages, one per plugin release
@@ -20,15 +22,21 @@ checkmk/
 Every plugin/check name starts with `check_`.
 
 Each plugin folder is self-contained and follows the Checkmk 2.3 extension
-package (MKP) layout: `agent_based/`, `rulesets/`, `server_side_calls/`
-and/or `libexec/`, `checkman/`. See each plugin's own README for setup
-details.
+package (MKP) layout: `agent_based/`, `rulesets/`, `graphing/`,
+`server_side_calls/` and/or `libexec/`, `checkman/`. Agent plug-ins keep the
+files for the monitored host under `agents/` (`agents/plugins/`,
+`agents/cfg_examples/`), which end up in the agents part of the package.
+See each plugin's own README for setup details.
 
 ## Plugins
 
 - [special_agents/check_graph_secrets](special_agents/check_graph_secrets/README.md) —
   monitors expiration of Microsoft Entra app registration client secrets via
   the Microsoft Graph API. Running in production since 2026-09.
+- [agent_plugins/check_sybase](agent_plugins/check_sybase/README.md) —
+  monitors SAP ASE (Sybase) instances on Linux: connection, dataserver and
+  backupserver, data and log usage, backups and errorlog. All thresholds are
+  set via rules in the Checkmk GUI.
 
 ## Installing a plugin
 
@@ -75,6 +83,11 @@ python3 scripts/build_mkp.py special_agents/check_graph_secrets \
   --description "What the package does." \
   --download-url "https://github.com/sebfeldm/checkmk/tree/main/special_agents/check_graph_secrets"
 ```
+
+Files under a plugin's `agents/` folder are packaged into the agents part
+(installed to `~/local/share/check_mk/agents/`), everything else into
+`cmk_addons_plugins`. Only files tracked by git are packaged, and executable
+bits are taken from git's index.
 
 Built packages are checked into [`releases/`](releases/) (tracked
 deliberately — `.gitignore` blocks stray `.mkp` files elsewhere from being
