@@ -33,8 +33,8 @@ Two options; pick one. Both work on the Raw edition.
 #### Option 1 — install the .mkp
 
 ```bash
-wget https://github.com/sebfeldm/checkmk/releases/download/check_sybase-v1.0.1/check_sybase-1.0.1.mkp
-mkp install check_sybase-1.0.1.mkp
+wget https://github.com/sebfeldm/checkmk/releases/download/check_sybase-v1.0.2/check_sybase-1.0.2.mkp
+mkp install check_sybase-1.0.2.mkp
 ```
 
 (or **Setup → Maintenance → Extension packages → Upload package**). This
@@ -116,7 +116,7 @@ chmod 0755 /usr/lib/check_mk_agent/plugins/300/check_sybase
 ```
 
 `main` is always the latest version. To pin a released version, replace
-`main` in the URLs with the release tag, e.g. `check_sybase-v1.0.1`.
+`main` in the URLs with the release tag, e.g. `check_sybase-v1.0.2`.
 
 **Hosts without internet access** — download the files from the Checkmk
 server (**Setup → Agents → Linux**) or copy them from a checkout, then:
