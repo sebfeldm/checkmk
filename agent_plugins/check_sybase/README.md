@@ -20,13 +20,9 @@ service name.
 | `SYBASE <SID> <DB> Backup` | age and result of the last database backup | SAP ASE (Sybase) Database Backup | WARN 26 h, CRIT 50 h; CRIT if failed; WARN if never backed up |
 | `SYBASE <SID> Errorlog` | lines in the ASE errorlog matching an error pattern within a time window | SAP ASE (Sybase) Errorlog | CRIT from the first error |
 
-Which databases get **no** backup service (e.g. temporary databases) is set
-by the discovery rule *SAP ASE (Sybase) Database Backup Discovery*
-(default: `(sap)?tempdb\d*`).
-
-Example — different data levels for one database on one host: create a rule
-*SAP ASE (Sybase) Database Data Usage*, set the explicit host and the
-condition *Instance and database* to `ABC ABC$`.
+Temporary databases (`tempdb`, `saptempdb`, …) get no backup service. How to
+change thresholds and states: see
+[Configuration in the Checkmk GUI](#configuration-in-the-checkmk-gui).
 
 ## Installation
 
@@ -57,7 +53,8 @@ updating is a `git pull`. As the **site user**:
 mkdir -p ~/git && cd ~/git
 git clone https://github.com/sebfeldm/checkmk.git   # skip if already cloned
 
-ln -s ~/git/checkmk/agent_plugins/check_sybase       ~/local/lib/python3/cmk_addons/plugins/check_sybase
+ln -s ~/git/checkmk/agent_plugins/check_sybase \
+      ~/local/lib/python3/cmk_addons/plugins/check_sybase
 ```
 
 Optional, so the agent files are also offered under **Setup → Agents →
@@ -65,8 +62,10 @@ Linux** like with the .mkp:
 
 ```bash
 mkdir -p ~/local/share/check_mk/agents/plugins ~/local/share/check_mk/agents/cfg_examples
-ln -s ~/git/checkmk/agent_plugins/check_sybase/agents/plugins/check_sybase       ~/local/share/check_mk/agents/plugins/check_sybase
-ln -s ~/git/checkmk/agent_plugins/check_sybase/agents/cfg_examples/check_sybase.cfg       ~/local/share/check_mk/agents/cfg_examples/check_sybase.cfg
+ln -s ~/git/checkmk/agent_plugins/check_sybase/agents/plugins/check_sybase \
+      ~/local/share/check_mk/agents/plugins/check_sybase
+ln -s ~/git/checkmk/agent_plugins/check_sybase/agents/cfg_examples/check_sybase.cfg \
+      ~/local/share/check_mk/agents/cfg_examples/check_sybase.cfg
 ```
 
 Don't combine both options on one site: if the .mkp is installed, remove it
@@ -102,13 +101,15 @@ are copied to each host manually (or with your configuration management).
 ```bash
 # Agent plug-in, runs asynchronously every 300 seconds
 mkdir -p /usr/lib/check_mk_agent/plugins/300
-wget -O /usr/lib/check_mk_agent/plugins/300/check_sybase     https://raw.githubusercontent.com/sebfeldm/checkmk/main/agent_plugins/check_sybase/agents/plugins/check_sybase
+wget -O /usr/lib/check_mk_agent/plugins/300/check_sybase \
+    https://raw.githubusercontent.com/sebfeldm/checkmk/main/agent_plugins/check_sybase/agents/plugins/check_sybase
 chmod 0755 /usr/lib/check_mk_agent/plugins/300/check_sybase
 
 # Example config, first install only: don't overwrite an existing config
 # with your credentials on updates
 [ -e /etc/check_mk/check_sybase.cfg ] || {
-    wget -O /etc/check_mk/check_sybase.cfg         https://raw.githubusercontent.com/sebfeldm/checkmk/main/agent_plugins/check_sybase/agents/cfg_examples/check_sybase.cfg
+    wget -O /etc/check_mk/check_sybase.cfg \
+        https://raw.githubusercontent.com/sebfeldm/checkmk/main/agent_plugins/check_sybase/agents/cfg_examples/check_sybase.cfg
     chown root:root /etc/check_mk/check_sybase.cfg
     chmod 0600 /etc/check_mk/check_sybase.cfg
 }
@@ -140,6 +141,107 @@ Test it as root:
 ```
 
 Then run a service discovery for the host in Checkmk.
+
+## Configuration in the Checkmk GUI
+
+Everything is configured with rules; without any rule the defaults from the
+[services table](#services) apply. After creating or changing rules, click
+**Activate on selected sites** (yellow button at the top right) — until
+then nothing changes.
+
+### Finding the rules
+
+- **Via a service (easiest):** open the host's service list, click the menu
+  icon (☰) of e.g. `SYBASE ABC ABC Data` → **Parameters for this service**.
+  The page shows the rule set that applies (*SAP ASE (Sybase) Database Data
+  Usage*) and the current effective values. Click the rule set name to
+  create a rule for exactly this service.
+- **Via the menu:** **Setup → Services → Service monitoring rules**, type
+  `SAP ASE` into the search field. There are five rule sets:
+  - *SAP ASE (Sybase) Instance*
+  - *SAP ASE (Sybase) Database Data Usage*
+  - *SAP ASE (Sybase) Database Log Usage*
+  - *SAP ASE (Sybase) Database Backup*
+  - *SAP ASE (Sybase) Errorlog*
+- The rule for which databases get a backup service is under
+  **Setup → Services → Discovery rules**, search `SAP ASE`:
+  *SAP ASE (Sybase) Database Backup Discovery*.
+
+### Creating a rule
+
+In the rule set, click **Add rule**, then:
+
+1. **Value:** tick the options you want to change and enter the values.
+   Options you don't tick keep their default.
+2. **Conditions:**
+   - **Explicit hosts:** the host(s) the rule applies to. Leave empty for
+     all hosts (or use a folder / host tags).
+   - **Instance and database** (or **Instance** for the instance and
+     errorlog rules): tick *Specify explicit values* and enter which
+     services the rule applies to. Leave it unticked for all instances /
+     databases of the selected hosts.
+3. **Save**, then activate the changes.
+
+The *Instance and database* values are matched as regular expressions
+against the **beginning** of the item `<SID> <DB>` (the service name without
+`SYBASE` and the type):
+
+| Value | Matches |
+|---|---|
+| `ABC ` | all databases of instance ABC |
+| `ABC ABC$` | only database ABC of instance ABC |
+| `ABC (master\|model)$` | master and model of instance ABC |
+| `.* saptools$` | saptools in every instance |
+
+Without `$` at the end, the value also matches longer names (`ABC sap`
+matches `saptools` and `saptempdb`).
+
+If several rules match a service, the first matching rule wins per option
+— rules higher up in the list (and in subfolders) take precedence. So put
+specific exceptions above general rules.
+
+### Examples
+
+**Other data levels for all SAP ASE databases:**
+rule *SAP ASE (Sybase) Database Data Usage*, *Used space* = fixed levels
+85 % / 92 %, no conditions except maybe a folder.
+
+**Exception for one large database on one host:**
+rule *SAP ASE (Sybase) Database Data Usage*, *Used space* = 97 % / 98 %,
+*Free space* = 50 GiB / 20 GiB, explicit host `<host>`, *Instance and
+database* = `ABC ABC$`. Place it above the general rule.
+
+**Daily backups at a different interval:**
+rule *SAP ASE (Sybase) Database Backup*, *Age of the last backup* =
+2 days / 3 days, e.g. for all databases of instance `ABC `.
+
+**Ignore the failure flag for databases without a dedicated log:**
+SAP ASE may report `LastBackupFailed` for databases whose log shares the
+data device (e.g. `master`, `model`, `sybsystemdb`, `sybsystemprocs`),
+typically after a transaction log dump that isn't possible for them. If your
+DBA confirms this is expected: rule *SAP ASE (Sybase) Database Backup*,
+*State if the last backup failed* = OK, *Instance and database* =
+`.* (master|model|sybsystemdb|sybsystemprocs)$`. The age of the last backup
+is still checked.
+
+**Backupserver not needed on a host:**
+rule *SAP ASE (Sybase) Instance*, *State if the backupserver is not
+running* = OK, explicit host `<host>`.
+
+**No backup service for additional databases:**
+rule *SAP ASE (Sybase) Database Backup Discovery*, add e.g. `saptools` to
+*Databases without backup service*. A rule replaces the default, so also
+add `(sap)?tempdb\d*` if temporary databases should stay excluded. Then run
+a service discovery on the affected hosts (**Setup → Hosts →** host →
+**Run service discovery**) and remove the vanished services.
+
+### What isn't configured in the GUI
+
+Connection settings (user, password, OS user, timeout) and the errorlog
+settings (path, time window, search pattern) belong to the agent plug-in and
+are set in `/etc/check_mk/check_sybase.cfg` on each database host, see the
+[example config](agents/cfg_examples/check_sybase.cfg). The GUI only decides
+which states result from the collected data.
 
 ## How it works
 
