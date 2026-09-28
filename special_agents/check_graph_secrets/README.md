@@ -91,28 +91,13 @@ Checkmk Appliance demo/free tier).
 
 ### Option 2 — git clone + symlink (recommended while iterating)
 
-The repo is public, so a plain HTTPS clone works, no key needed. On the
+The repo is public, so a plain HTTPS clone works. On the
 Checkmk server, as the **site user**:
 
 ```bash
 mkdir -p ~/git && cd ~/git
 git clone https://github.com/sebfeldm/checkmk.git
 ```
-
-(If you'd rather use SSH — e.g. the repo goes private again later —
-generate a deploy key on the server and add it as a **read-only** key
-under Settings → Deploy keys on the GitHub repo:
-```bash
-ssh-keygen -t ed25519 -C "checkmk-<site>-deploy" -f ~/.ssh/id_ed25519_checkmk -N ""
-cat ~/.ssh/id_ed25519_checkmk.pub   # paste this whole line as the deploy key
-cat >> ~/.ssh/config <<'EOF'
-Host github.com
-    IdentityFile ~/.ssh/id_ed25519_checkmk
-    IdentitiesOnly yes
-EOF
-chmod 600 ~/.ssh/config
-```
-then clone `git@github.com:sebfeldm/checkmk.git` instead.)
 
 Optional: this clone doesn't need the built `.mkp` files under
 `releases/` in its working tree (they're only there for people who want
