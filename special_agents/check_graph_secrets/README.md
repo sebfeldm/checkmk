@@ -141,10 +141,7 @@ cheap and avoids guessing.
 1. **Setup → Hosts → Add host.** Create a host representing the Entra
    tenant, e.g. `Entra`.
    - **IP address family: No IP** — this host isn't a real network device.
-   - Leave **Checkmk agent / API integrations** at its default (do **not**
-     set it to *"No API integrations, no Checkmk agent"* — that option
-     explicitly disables special agents too, and the agent will silently
-     never run; see Troubleshooting below).
+   - Set Checkmk agent / API integrations to **Configured API integrations, no Checkmk agent**
 2. **Setup → Agents → VM, cloud, container → Microsoft Graph app secrets.**
    (Special agents in the `Cloud` topic are filed under **"VM, cloud,
    container"**, not "Other integrations" — easy to miss.)
